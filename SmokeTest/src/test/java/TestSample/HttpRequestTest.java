@@ -133,9 +133,7 @@ public class HttpRequestTest {
         postRequest.addHeader("Content-Type", "application/json");
         postRequest.setHeader("Accept", "*/*");
 
-		//StringEntity input = new StringEntity("{\"query\":\"mutation{createRole(role: { name: \\\"NEXT\\\" description: \\\"BASICEMPLOYEE\\\" }) { name }}\"");
         StringEntity input = new StringEntity("{\"query\": \"mutation{createRole(role: {name: \\\"NEXT\\\"   description: \\\"BASICEMPLOYEE\\\"}) {name}}\"}");
-		//input.setContentType("application/json");
 		postRequest.setEntity(input);
 
 		HttpResponse response = httpClient.execute(postRequest);
