@@ -119,4 +119,53 @@ public class HttpRequestTest {
 
  }
 
+ @Test(groups = { "smoke" })
+ public void createRoleTest() {
+    System.out.println("create Role test");
+
+    try {
+		
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+		HttpPost postRequest = new HttpPost(
+			"http://inca-test.herokuapp.com/graphql");
+
+
+        postRequest.addHeader("Content-Type", "application/json");
+        postRequest.setHeader("Accept", "*/*");
+
+		//StringEntity input = new StringEntity("{\"query\":\"mutation{createRole(role: { name: \\\"NEXT\\\" description: \\\"BASICEMPLOYEE\\\" }) { name }}\"");
+        StringEntity input = new StringEntity("{\"query\": \"mutation{createRole(role: {name: \\\"NEXT\\\"   description: \\\"BASICEMPLOYEE\\\"}) {name}}\"}");
+		//input.setContentType("application/json");
+		postRequest.setEntity(input);
+
+		HttpResponse response = httpClient.execute(postRequest);
+
+		if (response.getStatusLine().getStatusCode() != 200) {
+			throw new RuntimeException("Failed : HTTP error code : "
+				+ response.getStatusLine().getStatusCode());
+		}
+
+		BufferedReader br = new BufferedReader(
+                        new InputStreamReader((response.getEntity().getContent())));
+
+		String output;
+		System.out.println("Output from Server .... \n");
+		while ((output = br.readLine()) != null) {
+			System.out.println(output);
+		}
+
+		httpClient.close();
+        
+	  } catch (MalformedURLException e) {
+
+		e.printStackTrace();
+
+	  } catch (IOException e) {
+
+		e.printStackTrace();
+
+	  }
+
+ }
+
 }
