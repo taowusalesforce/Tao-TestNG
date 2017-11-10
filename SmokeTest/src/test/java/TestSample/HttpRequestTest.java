@@ -12,7 +12,11 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.*;
+import org.apache.commons.io.*;
+import org.json.*;
 import org.testng.annotations.*;
+import static org.testng.Assert.*;
 
 public class HttpRequestTest {
 
@@ -28,6 +32,7 @@ public class HttpRequestTest {
      System.out.println("beforemethod start");
  }
 
+/*
  @Test(groups = { "smoke" })
  public void getTest() {
 
@@ -118,10 +123,11 @@ public class HttpRequestTest {
 	  }
 
  }
+ */
 
  @Test(groups = { "smoke" })
  public void createRoleTest() {
-    System.out.println("create Role test");
+    System.out.println("---create Role test");
 
     try {
 		
@@ -138,11 +144,14 @@ public class HttpRequestTest {
 
 		HttpResponse response = httpClient.execute(postRequest);
 
-		if (response.getStatusLine().getStatusCode() != 200) {
+        String responsejson = EntityUtils.toString(response.getEntity());
+		
+        if (response.getStatusLine().getStatusCode() != 200) {
 			throw new RuntimeException("Failed : HTTP error code : "
 				+ response.getStatusLine().getStatusCode());
 		}
 
+/*
 		BufferedReader br = new BufferedReader(
                         new InputStreamReader((response.getEntity().getContent())));
 
@@ -150,7 +159,20 @@ public class HttpRequestTest {
 		System.out.println("Output from Server .... \n");
 		while ((output = br.readLine()) != null) {
 			System.out.println(output);
-		}
+		}*/
+
+        //Object obj = new JSONParser().parse(br);
+        //String responsejson = EntityUtils.toString(response.getEntity());
+        System.out.println("response json string: " + responsejson);
+        JSONObject jo = new JSONObject(responsejson);
+
+        // getting firstName and lastName
+        //String errormessage = (String) jo.get("errors");
+        JSONObject ja = (JSONObject) jo.get("data");
+        JSONObject jrole = (JSONObject) ja.get("createRole");
+        String rolename = (String) jrole.get("name");
+
+        System.out.println("role name: " + rolename);
 
 		httpClient.close();
         
@@ -165,5 +187,160 @@ public class HttpRequestTest {
 	  }
 
  }
+
+
+@Test(groups = { "smoke" })
+public void createProcessorTest() {
+    System.out.println("---create Processor test");
+
+    try {
+		
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+		HttpPost postRequest = new HttpPost(
+			"http://inca-test.herokuapp.com/graphql");
+
+
+        postRequest.addHeader("Content-Type", "application/json");
+        postRequest.setHeader("Accept", "*/*");
+
+        StringEntity input = new StringEntity("{\"query\":\"mutation {createProcessor(activeFlag: \\\"true\\\", orgId: 1000, stripeConnectId: \\\"TEST00\\\") {\\n    activeFlag\\n    orgId\\n    stripeConnectId}}\",\"variables\":\"\"}");
+		postRequest.setEntity(input);
+
+		HttpResponse response = httpClient.execute(postRequest);
+
+        String responsejson = EntityUtils.toString(response.getEntity());
+		
+        if (response.getStatusLine().getStatusCode() != 200) {
+			throw new RuntimeException("Failed : HTTP error code : "
+				+ response.getStatusLine().getStatusCode());
+		}
+
+/*mutation {
+  createWorkplacePartner(orgId:1000, processorId:1000, division: "WESTCOAST", reseller: 1000) {
+    workplacePartnerId
+    
+  }
+}*/
+
+        System.out.println("response json string: " + responsejson);
+        JSONObject jo = new JSONObject(responsejson);
+
+        // getting stripeConnectId
+        JSONObject ja = (JSONObject) jo.get("data");
+        JSONObject jprocessor = (JSONObject) ja.get("createProcessor");
+        String stripeconnectID = (String) jprocessor.get("stripeConnectId");
+
+        System.out.println("stripeConnectId name: " + stripeconnectID);
+        if(!stripeconnectID.equals("TEST00"))
+        {
+            System.out.println("stringconnectID is not expected: " + stripeconnectID);
+            throw new Exception("stringconnectID is not expected.");
+        }
+        
+        httpClient.close();
+
+	  } catch (MalformedURLException e) {
+
+		e.printStackTrace();
+
+	  } catch (IOException e) {
+
+		e.printStackTrace();
+
+	  } catch (Exception e) {
+          e.printStackTrace();
+      }
+      finally
+      {
+        
+      }
+
+ }
+
+
+@Test(groups = { "smoke" })
+public void createWrokPlacePartnerTest() {
+    System.out.println("---create WrokPlace Partner test");
+
+    try {
+		
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+		HttpPost postRequest = new HttpPost(
+			"http://inca-test.herokuapp.com/graphql");
+
+
+        postRequest.addHeader("Content-Type", "application/json");
+        postRequest.setHeader("Accept", "*/*");
+
+        StringEntity input = new StringEntity("{\"query\": \"mutation {createWorkplacePartner(orgId: 1000, processorId: 1000, division: \\\"WESTCOAST\\\", reseller: 1000) {\\n    workplacePartnerId}}\",\"variables\":\"\"}");
+		postRequest.setEntity(input);
+
+		HttpResponse response = httpClient.execute(postRequest);
+
+        String responsejson = EntityUtils.toString(response.getEntity());
+		
+        if (response.getStatusLine().getStatusCode() != 200) {
+			throw new RuntimeException("Failed : HTTP error code : "
+				+ response.getStatusLine().getStatusCode());
+		}
+
+
+        System.out.println("response json string: " + responsejson);
+        JSONObject jo = new JSONObject(responsejson);
+
+        // getting stripeConnectId
+        JSONObject ja = (JSONObject) jo.get("data");
+        JSONObject jworkplace = (JSONObject) ja.get("createWorkplacePartner");
+        int workplaceID01 = (int) jworkplace.get("workplacePartnerId");
+
+        System.out.println("workplacePartnerId name: " + workplaceID01);
+        if(workplaceID01 <= 0)
+        {
+            System.out.println("first workplacePartnerId is not expected: " + workplaceID01);
+            throw new Exception("first workplacePartnerId is not expected.");
+        }
+        
+        //rerun the same query, and the return value should be increased
+        response = httpClient.execute(postRequest);
+        responsejson = EntityUtils.toString(response.getEntity());
+		
+        if (response.getStatusLine().getStatusCode() != 200) {
+			throw new RuntimeException("Failed : HTTP error code : "
+				+ response.getStatusLine().getStatusCode());
+		}
+
+
+        System.out.println("second response json string: " + responsejson);
+        jo = new JSONObject(responsejson);
+
+        // getting stripeConnectId
+        ja = (JSONObject) jo.get("data");
+        jworkplace = (JSONObject) ja.get("createWorkplacePartner");
+        int workplaceID02 = (int) jworkplace.get("workplacePartnerId");
+
+        System.out.println("workplacePartnerId name: " + workplaceID02);
+        assertEquals(workplaceID02, workplaceID01 + 1, "second workplacePartnerId is not expected: ");
+
+
+        httpClient.close();
+
+	  } catch (MalformedURLException e) {
+
+		e.printStackTrace();
+
+	  } catch (IOException e) {
+
+		e.printStackTrace();
+
+	  } catch (Exception e) {
+          e.printStackTrace();
+      }
+      finally
+      {
+        
+      }
+
+ }
+
 
 }
