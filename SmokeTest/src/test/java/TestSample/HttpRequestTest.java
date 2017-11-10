@@ -20,10 +20,18 @@ import static org.testng.Assert.*;
 
 public class HttpRequestTest {
 
+CloseableHttpClient httpClient;
+HttpPost postRequest;
+
  @BeforeClass
  public void setUp() {
    // code that will be invoked when this test is instantiated
    System.out.println("beforeclass setup");
+   httpClient = HttpClientBuilder.create().build();
+   postRequest = new HttpPost(
+			"http://inca-test.herokuapp.com/graphql");
+   postRequest.addHeader("Content-Type", "application/json");
+   postRequest.setHeader("Accept", "*/*");
  }
  
  @BeforeMethod
@@ -31,6 +39,19 @@ public class HttpRequestTest {
      //code that will be invoked when each test method is called
      System.out.println("beforemethod start");
  }
+
+@AfterClass
+public void teardown() {
+    //code that will be invoked when the test is completed
+    System.out.println("afterclass teardown");
+    try {
+        httpClient.close();
+    } catch (IOException e) {
+		e.printStackTrace();
+	  }
+    
+}
+
 
 /*
  @Test(groups = { "smoke" })
@@ -130,14 +151,6 @@ public class HttpRequestTest {
     System.out.println("---create Role test");
 
     try {
-		
-        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-		HttpPost postRequest = new HttpPost(
-			"http://inca-test.herokuapp.com/graphql");
-
-
-        postRequest.addHeader("Content-Type", "application/json");
-        postRequest.setHeader("Accept", "*/*");
 
         StringEntity input = new StringEntity("{\"query\": \"mutation{createRole(role: {name: \\\"NEXT\\\"   description: \\\"BASICEMPLOYEE\\\"}) {name}}\"}");
 		postRequest.setEntity(input);
@@ -151,94 +164,16 @@ public class HttpRequestTest {
 				+ response.getStatusLine().getStatusCode());
 		}
 
-/*
-		BufferedReader br = new BufferedReader(
-                        new InputStreamReader((response.getEntity().getContent())));
-
-		String output;
-		System.out.println("Output from Server .... \n");
-		while ((output = br.readLine()) != null) {
-			System.out.println(output);
-		}*/
-
-        //Object obj = new JSONParser().parse(br);
-        //String responsejson = EntityUtils.toString(response.getEntity());
         System.out.println("response json string: " + responsejson);
         JSONObject jo = new JSONObject(responsejson);
 
-        // getting firstName and lastName
-        //String errormessage = (String) jo.get("errors");
+
         JSONObject ja = (JSONObject) jo.get("data");
         JSONObject jrole = (JSONObject) ja.get("createRole");
         String rolename = (String) jrole.get("name");
 
         System.out.println("role name: " + rolename);
-
-		httpClient.close();
         
-	  } catch (MalformedURLException e) {
-
-		e.printStackTrace();
-
-	  } catch (IOException e) {
-
-		e.printStackTrace();
-
-	  }
-
- }
-
-
-@Test(groups = { "smoke" })
-public void createProcessorTest() {
-    System.out.println("---create Processor test");
-
-    try {
-		
-        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-		HttpPost postRequest = new HttpPost(
-			"http://inca-test.herokuapp.com/graphql");
-
-
-        postRequest.addHeader("Content-Type", "application/json");
-        postRequest.setHeader("Accept", "*/*");
-
-        StringEntity input = new StringEntity("{\"query\":\"mutation {createProcessor(activeFlag: \\\"true\\\", orgId: 1000, stripeConnectId: \\\"TEST00\\\") {\\n    activeFlag\\n    orgId\\n    stripeConnectId}}\",\"variables\":\"\"}");
-		postRequest.setEntity(input);
-
-		HttpResponse response = httpClient.execute(postRequest);
-
-        String responsejson = EntityUtils.toString(response.getEntity());
-		
-        if (response.getStatusLine().getStatusCode() != 200) {
-			throw new RuntimeException("Failed : HTTP error code : "
-				+ response.getStatusLine().getStatusCode());
-		}
-
-/*mutation {
-  createWorkplacePartner(orgId:1000, processorId:1000, division: "WESTCOAST", reseller: 1000) {
-    workplacePartnerId
-    
-  }
-}*/
-
-        System.out.println("response json string: " + responsejson);
-        JSONObject jo = new JSONObject(responsejson);
-
-        // getting stripeConnectId
-        JSONObject ja = (JSONObject) jo.get("data");
-        JSONObject jprocessor = (JSONObject) ja.get("createProcessor");
-        String stripeconnectID = (String) jprocessor.get("stripeConnectId");
-
-        System.out.println("stripeConnectId name: " + stripeconnectID);
-        if(!stripeconnectID.equals("TEST00"))
-        {
-            System.out.println("stringconnectID is not expected: " + stripeconnectID);
-            throw new Exception("stringconnectID is not expected.");
-        }
-        
-        httpClient.close();
-
 	  } catch (MalformedURLException e) {
 
 		e.printStackTrace();
@@ -259,18 +194,66 @@ public void createProcessorTest() {
 
 
 @Test(groups = { "smoke" })
+public void createProcessorTest() {
+    System.out.println("---create Processor test");
+
+    try {
+		
+        StringEntity input = new StringEntity("{\"query\":\"mutation {createProcessor(activeFlag: \\\"true\\\", orgId: 1000, stripeConnectId: \\\"TEST00\\\") {\\n    activeFlag\\n    orgId\\n    stripeConnectId}}\",\"variables\":\"\"}");
+		postRequest.setEntity(input);
+
+		HttpResponse response = httpClient.execute(postRequest);
+
+        String responsejson = EntityUtils.toString(response.getEntity());
+		
+        if (response.getStatusLine().getStatusCode() != 200) {
+			throw new RuntimeException("Failed : HTTP error code : "
+				+ response.getStatusLine().getStatusCode());
+		}
+
+
+        System.out.println("response json string: " + responsejson);
+        JSONObject jo = new JSONObject(responsejson);
+
+        // getting stripeConnectId
+        JSONObject ja = (JSONObject) jo.get("data");
+        JSONObject jprocessor = (JSONObject) ja.get("createProcessor");
+        String stripeconnectID = (String) jprocessor.get("stripeConnectId");
+
+        System.out.println("stripeConnectId name: " + stripeconnectID);
+        if(!stripeconnectID.equals("TEST00"))
+        {
+            System.out.println("stringconnectID is not expected: " + stripeconnectID);
+            throw new Exception("stringconnectID is not expected.");
+        }
+        
+
+	  } catch (MalformedURLException e) {
+
+		e.printStackTrace();
+
+	  } catch (IOException e) {
+
+		e.printStackTrace();
+
+	  } catch (Exception e) {
+          e.printStackTrace();
+      }
+      finally
+      {
+        
+      }
+
+ }
+
+
+
+
+@Test(groups = { "smoke" })
 public void createWrokPlacePartnerTest() {
     System.out.println("---create WrokPlace Partner test");
 
     try {
-		
-        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-		HttpPost postRequest = new HttpPost(
-			"http://inca-test.herokuapp.com/graphql");
-
-
-        postRequest.addHeader("Content-Type", "application/json");
-        postRequest.setHeader("Accept", "*/*");
 
         StringEntity input = new StringEntity("{\"query\": \"mutation {createWorkplacePartner(orgId: 1000, processorId: 1000, division: \\\"WESTCOAST\\\", reseller: 1000) {\\n    workplacePartnerId}}\",\"variables\":\"\"}");
 		postRequest.setEntity(input);
@@ -320,9 +303,6 @@ public void createWrokPlacePartnerTest() {
 
         System.out.println("workplacePartnerId name: " + workplaceID02);
         assertEquals(workplaceID02, workplaceID01 + 1, "second workplacePartnerId is not expected: ");
-
-
-        httpClient.close();
 
 	  } catch (MalformedURLException e) {
 
