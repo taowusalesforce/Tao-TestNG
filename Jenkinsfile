@@ -5,6 +5,7 @@ pipeline {
       steps {
         echo 'dev ci step'
         sh 'echo hello'
+        build(job: 'sampletest', propagate: true)
       }
     }
   }
