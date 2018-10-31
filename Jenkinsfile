@@ -7,11 +7,5 @@ pipeline {
         sh 'echo hello'
       }
     }
-    stage('QA') {
-      steps {
-        echo 'QA step'
-        sh 'echo Hello QA'
-      }
-    }
   }
 }
