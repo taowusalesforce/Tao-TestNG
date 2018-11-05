@@ -6,7 +6,7 @@ pipeline {
         stage('Tao-TestNG test branch') {
           steps {
             echo 'dev ci step'
-            git(url: 'git@github.com:taowusalesforce/Tao-TestNG.git', branch: 'test')
+            git(url: 'git@github.com:taowusalesforce/Tao-TestNG.git', branch: 'test', poll: true)
             sh 'sh ./show_repo.sh'
           }
         }
