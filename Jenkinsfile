@@ -18,7 +18,7 @@ pipeline {
         }
       }
     }
-    stage('') {
+    stage('Email') {
       steps {
         emailext(subject: 'pipeline done', body: 'pipeline done', to: 'tao.wu@salesforce.com')
       }
