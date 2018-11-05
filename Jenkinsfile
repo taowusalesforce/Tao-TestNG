@@ -6,14 +6,14 @@ pipeline {
         stage('DEVCI') {
           steps {
             echo 'dev ci step'
-            sh 'echo hello'
-            build(job: 'sampletest', propagate: true)
+            git(url: 'git@github.com:taowusalesforce/Tao-TestNG.git', branch: 'test')
+            sh 'sh ./show_repo.sh'
           }
         }
         stage('different branch') {
           steps {
-            git(url: 'git@github.com:taowusalesforce/Tao-TestNG.git', branch: 'test')
-            build 'sampletest'
+            git(url: 'git@github.com:taowusalesforce/Test-GraphQL.git', branch: 'pipeline')
+            sh 'sh ./show_repo.sh'
           }
         }
       }
